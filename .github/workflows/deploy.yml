@@ -1,7 +1,6 @@
 # .github/workflows/deploy.yml
 name: Build and Deploy FastAPI to AKS
 
-# Trigger the workflow on push to the main branch
 on:
   push:
     branches:
@@ -11,17 +10,14 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    # 1. Checkout the repository code
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # 2. Log in to Azure
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # 3. Log in to Azure Container Registry (ACR)
     - name: ACR Login
       uses: azure/docker-login@v1
       with:
@@ -29,28 +25,22 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
 
-    # 4. Build, push, and update the manifest with the correct image tag
-    - name: Build, Push, and Update Manifest
+    - name: Build and Push Docker Image
       run: |
-        IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}"
-        docker build . -t "$IMAGE_NAME"
-        docker push "$IMAGE_NAME"
-        
-        # Use a variable for the image name to ensure the sed command works correctly
-        sed -i "s|${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:latest|$IMAGE_NAME|g" deployment.yaml
+        docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
 
-    # 5. Set the AKS context (connect to your cluster)
     - name: Set AKS Context
       uses: azure/aks-set-context@v3
       with:
         resource-group: ${{ secrets.RESOURCE_GROUP }}
         cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
 
-    # 6. Deploy to Kubernetes
-    - name: Deploy to AKS
+    - name: Deploy to Kubernetes
       uses: Azure/k8s-deploy@v4
       with:
         action: 'deploy'
         manifests: |
           deployment.yaml
-        # The 'images' input is no longer needed
+        images: |
+          ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}

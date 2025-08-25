@@ -14,7 +14,6 @@ spec:
     spec:
       containers:
       - name: fastapi-app
-        image: ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:latest # The k8s-deploy action will replace this with the correct image tag from the workflow's 'images' input.
         ports:
         - containerPort: 80
 ---
