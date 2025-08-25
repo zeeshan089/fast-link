@@ -1,10 +1,12 @@
 # .github/workflows/deploy.yml
 name: Build and Deploy FastAPI to AKS
+# This is a test change to force a commit
 
 on:
   push:
     branches:
       - main
+# ... rest of your file
 
 jobs:
   build-and-deploy:
