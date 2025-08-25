@@ -33,8 +33,8 @@ jobs:
     - name: Build, Push, and Update Manifest
       run: |
         IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}"
-        docker build . -t $IMAGE_NAME
-        docker push $IMAGE_NAME
+        docker build . -t "$IMAGE_NAME"
+        docker push "$IMAGE_NAME"
         
         # Use a variable for the image name to ensure the sed command works correctly
         sed -i "s|${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:latest|$IMAGE_NAME|g" deployment.yaml
