@@ -29,25 +29,24 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
 
-    # 4. Build and push the Docker image to ACR
-    - name: Build and Push Docker Image
+    # 4. Build, push, and update the manifest with the correct image tag
+    - name: Build, Push, and Update Manifest
       run: |
-        docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
+        IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}"
+        docker build . -t $IMAGE_NAME
+        docker push $IMAGE_NAME
+        
+        # Use a variable for the image name to ensure the sed command works correctly
+        sed -i "s|${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:latest|$IMAGE_NAME|g" deployment.yaml
 
-    # 5. Set the correct image name in the manifest
-    - name: Set Correct Image Name in Manifest
-      run: |
-        sed -i 's|${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:latest|${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}|g' deployment.yaml
-
-    # 6. Set the AKS context (connect to your cluster)
+    # 5. Set the AKS context (connect to your cluster)
     - name: Set AKS Context
       uses: azure/aks-set-context@v3
       with:
         resource-group: ${{ secrets.RESOURCE_GROUP }}
         cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
 
-    # 7. Deploy to Kubernetes
+    # 6. Deploy to Kubernetes
     - name: Deploy to AKS
       uses: Azure/k8s-deploy@v4
       with:
