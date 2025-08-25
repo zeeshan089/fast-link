@@ -1,0 +1,54 @@
+# .github/workflows/deploy.yml
+name: Build and Deploy FastAPI to AKS
+
+# Trigger the workflow on push to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    # 1. Checkout the repository code
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2. Log in to Azure
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # 3. Log in to Azure Container Registry (ACR)
+    - name: ACR Login
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}   # Optional with Azure Login
+        password: ${{ secrets.ACR_PASSWORD }} # Optional with Azure Login
+
+    # 4. Build and push the Docker image to ACR
+    - name: Build and Push Docker Image
+      run: |
+        docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
+
+    # 5. Set the AKS context (connect to your cluster)
+    - name: Set AKS Context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: ${{ secrets.RESOURCE_GROUP }}
+        cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+    # 6. Deploy to Kubernetes
+    - name: Deploy to AKS
+      uses: Azure/k8s-deploy@v4
+      with:
+        action: 'deploy'
+        manifests: |
+          deployment.yaml
+        images: |
+          ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
+        # The k8s-deploy action automatically replaces the placeholder image in deployment.yaml
