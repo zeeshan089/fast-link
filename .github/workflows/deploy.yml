@@ -1,12 +1,10 @@
 # .github/workflows/deploy.yml
 name: Build and Deploy FastAPI to AKS
-# This is a test change to force a commit
 
 on:
   push:
     branches:
       - main
-# ... rest of your file
 
 jobs:
   build-and-deploy:
@@ -37,37 +35,37 @@ jobs:
       run: |
         IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}"
         
-        echo "apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: fastapi-app-deployment
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: fastapi-app
-  template:
-    metadata:
-      labels:
-        app: fastapi-app
-    spec:
-      containers:
-      - name: fastapi-app
-        image: $IMAGE_NAME
-        ports:
-        - containerPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: fastapi-app-service
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: 80
-  selector:
-    app: fastapi-app" > deployment.yaml
+        echo "apiVersion: apps/v1" > deployment.yaml
+        echo "kind: Deployment" >> deployment.yaml
+        echo "metadata:" >> deployment.yaml
+        echo "  name: fastapi-app-deployment" >> deployment.yaml
+        echo "spec:" >> deployment.yaml
+        echo "  replicas: 2" >> deployment.yaml
+        echo "  selector:" >> deployment.yaml
+        echo "    matchLabels:" >> deployment.yaml
+        echo "      app: fastapi-app" >> deployment.yaml
+        echo "  template:" >> deployment.yaml
+        echo "    metadata:" >> deployment.yaml
+        echo "      labels:" >> deployment.yaml
+        echo "        app: fastapi-app" >> deployment.yaml
+        echo "    spec:" >> deployment.yaml
+        echo "      containers:" >> deployment.yaml
+        echo "      - name: fastapi-app" >> deployment.yaml
+        echo "        image: $IMAGE_NAME" >> deployment.yaml
+        echo "        ports:" >> deployment.yaml
+        echo "        - containerPort: 80" >> deployment.yaml
+        echo "---" >> deployment.yaml
+        echo "apiVersion: v1" >> deployment.yaml
+        echo "kind: Service" >> deployment.yaml
+        echo "metadata:" >> deployment.yaml
+        echo "  name: fastapi-app-service" >> deployment.yaml
+        echo "spec:" >> deployment.yaml
+        echo "  type: LoadBalancer" >> deployment.yaml
+        echo "  ports:" >> deployment.yaml
+        echo "  - port: 80" >> deployment.yaml
+        echo "    targetPort: 80" >> deployment.yaml
+        echo "  selector:" >> deployment.yaml
+        echo "    app: fastapi-app" >> deployment.yaml
 
     - name: Set AKS Context
       uses: azure/aks-set-context@v3
