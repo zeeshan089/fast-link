@@ -1,3 +1,4 @@
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,7 +15,8 @@ spec:
     spec:
       containers:
       - name: fastapi-app
-        image: fastapi-app:latest
+        # This is a placeholder; the workflow will create the correct file
+        image: ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:latest
         ports:
         - containerPort: 80
 ---

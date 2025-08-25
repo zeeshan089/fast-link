@@ -30,6 +30,43 @@ jobs:
         docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
         docker push ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
 
+    # Dynamically create the deployment.yaml file with the correct image name
+    - name: Generate Kubernetes Manifest
+      run: |
+        IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}"
+        
+        echo "apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fastapi-app
+  template:
+    metadata:
+      labels:
+        app: fastapi-app
+    spec:
+      containers:
+      - name: fastapi-app
+        image: $IMAGE_NAME
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-app-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: fastapi-app" > deployment.yaml
+
     - name: Set AKS Context
       uses: azure/aks-set-context@v3
       with:
@@ -42,5 +79,4 @@ jobs:
         action: 'deploy'
         manifests: |
           deployment.yaml
-        images: |
-          ${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}
+        # The 'images' input is no longer needed because the manifest is now correct
