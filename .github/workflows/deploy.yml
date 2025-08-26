@@ -34,7 +34,7 @@ jobs:
         IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER }}/fastapi-app:${{ github.sha }}"
         
         # Use docker buildx to build a multi-platform image
-        docker buildx build --platform linux/amd64 -t "$IMAGE_NAME" --push .
+        docker buildx build --platform linux/arm64 -t "$IMAGE_NAME" --push .
 
     # Dynamically create the deployment.yaml file with the correct image name
     - name: Generate Kubernetes Manifest
