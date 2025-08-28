@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: zeeshanfastlink 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zeeshanfastlink
+  template:
+    metadata:
+      labels:
+        app: zeeshanfastlink 
+    spec:
+      containers:
+        - name: zeeshanfastlink 
+          image: firstregistry001.azurecr.io/zeeshanfastlink
+          ports:
+          - containerPort: 80
